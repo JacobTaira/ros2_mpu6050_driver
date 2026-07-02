@@ -1,0 +1,11 @@
+kind: package
+name: mpu6050driver
+# Peer package: ut_automata's vesc_driver (Hardware build) compiles
+# ../mpu6050driver/src/mpu6050sensor.cpp directly for IMU fusion, so its source
+# must be mounted into the workspace alongside ut_automata.
+dependencies:
+- ament_cmake
+- rclcpp
+- sensor_msgs
+source_path: .
+ros_distro: jazzy

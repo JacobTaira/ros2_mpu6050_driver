@@ -11,6 +11,7 @@ extern "C" {
 }
 
 #include <iostream>
+#include <stdexcept>
 
 MPU6050Sensor::MPU6050Sensor(int bus_number)
 {
@@ -19,13 +20,15 @@ MPU6050Sensor::MPU6050Sensor(int bus_number)
   std::cout << filename_ << std::endl;
   file_ = open(filename_, O_RDWR);
   if (file_ < 0) {
-    std::cerr << "Failed to open file descriptor! Check your bus number! Errno: "
-              << strerror(errno);
-    exit(1);
+    // Throw (instead of exit(1)) so callers can disable IMU fusion gracefully
+    // when the bus/sensor is absent, rather than killing the whole process.
+    throw std::runtime_error(
+        "MPU6050: failed to open " + std::string(filename_) + ": " + strerror(errno));
   }
   if (ioctl(file_, I2C_SLAVE, MPU6050_ADDRESS_DEFAULT) < 0) {
-    std::cerr << "Failed to find device address! Check device address!";
-    exit(1);
+    const std::string err = strerror(errno);
+    close(file_);
+    throw std::runtime_error("MPU6050: failed to set I2C slave address: " + err);
   }
   // Wake up sensor
   int result = i2c_smbus_write_byte_data(file_, PWR_MGMT_1, 0);

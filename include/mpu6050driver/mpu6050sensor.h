@@ -60,6 +60,8 @@ class MPU6050Sensor {
 
   // MPU6050 registers and addresses (s. datasheet for details)
   static constexpr int MPU6050_ADDRESS_DEFAULT = 0x68;
+  static constexpr int WHO_AM_I = 0x75;
+  static constexpr int WHO_AM_I_VALUE = 0x68;
   static constexpr int PWR_MGMT_1 = 0x6B;
   static constexpr int GYRO_CONFIG = 0x1B;
   static constexpr int ACCEL_CONFIG = 0x1C;

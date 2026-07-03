@@ -30,6 +30,20 @@ MPU6050Sensor::MPU6050Sensor(int bus_number)
     close(file_);
     throw std::runtime_error("MPU6050: failed to set I2C slave address: " + err);
   }
+  // Verify the sensor actually answers before configuring it. With no chip
+  // on the bus, open() and the slave-address ioctl above still succeed and
+  // every later transfer merely times out (~0.4s each), so init would
+  // "pass" and callers would keep issuing timing-out reads forever.
+  int who_am_i = i2c_smbus_read_byte_data(file_, WHO_AM_I);
+  // Mask bit0/bit7 per datasheet: WHO_AM_I returns the 6-bit device id.
+  if (who_am_i < 0 || (who_am_i & 0x7E) != (WHO_AM_I_VALUE & 0x7E)) {
+    const std::string err = who_am_i < 0
+        ? std::string(strerror(errno))
+        : "unexpected WHO_AM_I value " + std::to_string(who_am_i);
+    close(file_);
+    throw std::runtime_error("MPU6050: no sensor responding at address 0x68 on " +
+                             std::string(filename_) + " (" + err + ")");
+  }
   // Wake up sensor
   int result = i2c_smbus_write_byte_data(file_, PWR_MGMT_1, 0);
   if (result < 0) reportError(errno);

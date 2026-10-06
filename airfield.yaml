@@ -7,5 +7,9 @@ dependencies:
 - ament_cmake
 - rclcpp
 - sensor_msgs
+# src/mpu6050sensor.cpp includes <i2c/smbus.h> and CMakeLists links `i2c`.
+# The upstream package.xml does not say so; without this the package only
+# compiled inside ut_automata's image, which happens to install the library.
+- libi2c-dev
 source_path: .
 ros_distro: jazzy
